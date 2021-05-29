@@ -16,6 +16,8 @@ func GetStatusCode(err error) int {
 		return http.StatusConflict
 	case model.ErrSlugNotMatch:
 		return http.StatusUnprocessableEntity
+	case model.ErrSlugNotFound:
+		return http.StatusNotFound
 	default:
 		return http.StatusInternalServerError
 	}

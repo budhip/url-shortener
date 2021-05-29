@@ -19,3 +19,7 @@ type ShortenReq struct {
 type ShortenResp struct {
 	Slug	string	`json:"shortCode"`
 }
+
+type GetShortCodeResp struct {
+	Location	string	`json:"location"`
+}

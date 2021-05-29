@@ -60,3 +60,20 @@ func (usu *urlShortenerUseCase) StoreShorten(c context.Context, url, shortCode s
 		Slug: shortCode,
 	}, nil
 }
+
+// GetShortCode is to get url by shortCode (as parameter)
+func (usu *urlShortenerUseCase) GetShortCode(c context.Context, shortCode string) (string, error) {
+	data, err := usu.urlShortenerRepo.GetDataBySlug(c, shortCode)
+	if err != nil {
+		return "", err
+	}
+
+	hits := data.Hits + 1
+
+	errUpdate := usu.urlShortenerRepo.Update(c, hits, shortCode, time.Now())
+	if errUpdate != nil {
+		return "", model.ErrInternalServerError
+	}
+
+	return data.URL, nil
+}

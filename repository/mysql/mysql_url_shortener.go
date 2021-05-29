@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/budhip/url-shortener/domain"
+	"github.com/budhip/url-shortener/model"
 )
 
 type mysqlUrlShortenerRepository struct {
@@ -45,6 +47,47 @@ func (m *mysqlUrlShortenerRepository) Store(ctx context.Context, url, slug strin
 	_, errRes := stmt.ExecContext(ctx, slug, url, createdAt)
 	if errRes != nil {
 		return errRes
+	}
+
+	return nil
+}
+
+func (m *mysqlUrlShortenerRepository) GetDataBySlug (ctx context.Context, shortCode string) (model.UrlShortener, error) {
+	us := model.UrlShortener{}
+	query := `SELECT slug, url, created_at, last_seen, hits FROM url_shortener WHERE BINARY slug = ?`
+
+	err := m.Conn.QueryRowContext(ctx, query, shortCode).Scan(
+		&us.Slug,
+		&us.URL,
+		&us.CreatedAt,
+		&us.LastSeen,
+		&us.Hits,
+	)
+	if err != nil {
+		log.Println("err GetDataBySlug repo: ", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return model.UrlShortener{}, model.ErrSlugNotFound
+		} else {
+			return model.UrlShortener{}, err
+		}
+	}
+
+	return us, nil
+}
+
+func (m *mysqlUrlShortenerRepository) Update (ctx context.Context, hits int, shortCode string, lastSeen time.Time) error {
+	query := `UPDATE url_shortener SET last_seen=?, hits=? WHERE BINARY slug = ?`
+
+	stmt, err := m.Conn.Prepare(query)
+	if err != nil {
+		log.Println("err update: ", err)
+		return model.ErrInternalServerError
+	}
+	defer stmt.Close()
+
+	_, errExec := stmt.ExecContext(ctx, lastSeen, hits, shortCode)
+	if errExec != nil {
+		return model.ErrInternalServerError
 	}
 
 	return nil
