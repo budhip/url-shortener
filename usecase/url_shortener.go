@@ -77,3 +77,23 @@ func (usu *urlShortenerUseCase) GetShortCode(c context.Context, shortCode string
 
 	return data.URL, nil
 }
+
+func (usu *urlShortenerUseCase) GetShortCodeStats(c context.Context, shortCode string) (map[string]interface{}, error) {
+	data, err := usu.urlShortenerRepo.GetDataBySlug(c, shortCode)
+	if err != nil {
+		return nil, err
+	}
+
+	if data.Hits == 0 {
+		return map[string]interface{}{
+			"startDate": data.CreatedAt.UTC().Format(time.RFC3339),
+			"redirectCount": data.Hits,
+		}, nil
+	}
+
+	return map[string]interface{}{
+		"startDate": data.CreatedAt.UTC().Format(time.RFC3339),
+		"lastSeenDate": data.LastSeen.UTC().Format(time.RFC3339),
+		"redirectCount": data.Hits,
+	}, nil
+}

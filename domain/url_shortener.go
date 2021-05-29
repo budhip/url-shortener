@@ -11,6 +11,7 @@ import (
 type UrlShortenerUseCase interface {
 	StoreShorten(ctx context.Context, url, shortCode string) (*model.ShortenResp, error)
 	GetShortCode(ctx context.Context, shortCode string) (string, error)
+	GetShortCodeStats(ctx context.Context, shortCode string) (map[string]interface{}, error)
 }
 
 // UrlShortenerRepository represent the url_shortener's repository contract

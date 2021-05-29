@@ -23,6 +23,7 @@ func NewUrlShortenerHandler(r *mux.Router, usu domain.UrlShortenerUseCase) {
 	}
 	r.HandleFunc("/shorten", handler.UrlShorten).Methods("POST")
 	r.HandleFunc("/{shortcode:[a-zA-Z0-9]+}", handler.GetShortCode).Methods("GET")
+	r.HandleFunc("/{shortcode:[a-zA-Z0-9]+}/stats", handler.GetShortCodeStats).Methods("GET")
 }
 
 // UrlShorten will store the url shorten by given request body
@@ -91,4 +92,28 @@ func (ush *UrlShortenerHandler) GetShortCode(w http.ResponseWriter, r *http.Requ
 	}
 
 	marshallingResponse(w, &model.GetShortCodeResp{Location: url}, nil, httpStatus)
+}
+
+func (ush *UrlShortenerHandler) GetShortCodeStats(w http.ResponseWriter, r *http.Request) {
+	shortCode := mux.Vars(r)["shortcode"]
+
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	httpStatus := http.StatusFound
+
+	resp, err := ush.UrlShortUseCase.GetShortCodeStats(ctx, shortCode)
+	if err != nil {
+		respErrResp := model.ResponseError{
+			Message: err.Error(),
+		}
+
+		httpStatus = utils.GetStatusCode(err)
+
+		marshallingResponse(w, respErrResp, err, httpStatus)
+
+		return
+	}
+
+	marshallingResponse(w, resp, nil, httpStatus)
 }
