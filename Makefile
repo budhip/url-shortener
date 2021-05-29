@@ -5,9 +5,6 @@ test:
 engine:
 	go build -o ${BINARY} main.go
 
-unittest:
-	go test -short  ./...
-
 clean:
 	if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi
 
@@ -18,4 +15,13 @@ lint-prepare:
 lint:
 	./bin/golangci-lint run ./...
 
-.PHONY: clean install unittest build vendor lint-prepare lint
+docker:
+	docker build -t test-url-shortener .
+
+run:
+	docker-compose up -d
+
+stop:
+	docker-compose down
+
+.PHONY: clean install build docker run stop vendor lint-prepare lint
