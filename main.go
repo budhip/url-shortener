@@ -6,9 +6,14 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
+
+	_urlShortHttpDelivery "github.com/budhip/url-shortener/delivery/http"
+	_urlShortRepo "github.com/budhip/url-shortener/repository/mysql"
+	_urlShortUCase "github.com/budhip/url-shortener/usecase"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -57,6 +62,14 @@ func main() {
 	log.Println("connected to database")
 
 	r := mux.NewRouter()
+
+	urlShortRepo := _urlShortRepo.NewMysqlUrlShortenerRepository(dbConn)
+
+	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
+
+	urlShortU := _urlShortUCase.NewUrlShortenerUseCase(urlShortRepo, timeoutContext)
+
+	_urlShortHttpDelivery.NewUrlShortenerHandler(r, urlShortU)
 
 	// Start HTTP server.
 	log.Println("Server started. Listening on port: ", viper.GetString("server.address"))
