@@ -33,7 +33,4 @@ $ curl localhost:9090/:shortcode
 
 # Stop
 $ make stop
-
-# Kill all container and image
-$ make kill-all
 ```
