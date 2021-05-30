@@ -29,7 +29,7 @@ $ make run
 $ docker ps
 
 # Execute the call for example: users-by-ids
-$ curl localhost:9090/users-by-ids
+$ curl localhost:9090/:shortcode
 
 # Stop
 $ make stop
